@@ -8,34 +8,34 @@
                         <el-tree :indent="10" :data="jgData" highlight-current :props="defaultProps" :expand-on-click-node="false" @load="childLoad" @node-click="jghandleNodeClick" @node-expand="nodeExpand"></el-tree>
                     </div>
                 </div>
-                <div>
+                <div v-show="targetMode>1">
                     <div class="head">部门列表</div>
                     <div class="grid-content bg-purple h300">
                         <el-tree :data="bmData" highlight-current :props="defaultProps" :expand-on-click-node="false" @node-click="buNodeClick" @node-expand="bmNodeExpand"></el-tree>
                     </div>
                 </div>
-                <!-- <div>
+                <div v-show="targetMode>2">
                     <div class="head">
                         <span>人员列表</span>
                     </div>
                     <div class="flex fHead">
-                        <div class="half">
+                        <!-- <div class="half">
                             <el-select v-model="value" placeholder="请选择">
                                 <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
                                 </el-option>
                             </el-select>
-                        </div>
+                        </div> -->
                         <div class="half">
-                            <el-input placeholder="检索码" icon="search" v-model="input2" :on-icon-click="handleIconClick">
+                            <el-input placeholder="输入关键字进行过滤" v-model="filterText">
                             </el-input>
                         </div>
                     </div>
                     <div class="grid-content bg-purple h300">
-                        <el-tree :data="ryData" highlight-current :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+                        <el-tree :data="ryData" ref="ryTree" highlight-current :props="rydefaultProps" @node-click="ryhandleNodeClick" :filter-node-method="filterNode"></el-tree>
                     </div>
-                </div> -->
+                </div>
             </el-col>
-            <el-col :span="18" v-loading.body="loading">
+            <el-col :span="18">
                 <div class="grid-content bg-purple-light boxOut">
                     <div class="articleHandleBox flex">
                         <div class="marginL20">
@@ -56,7 +56,7 @@
                 </div>
             </el-col>
         </el-row>
-        <el-dialog title="提示" :visible.sync="dialogVisible" size="small" top="true" :before-close="handleClose">
+        <el-dialog title="提示" :visible.sync="dialogVisible" size="small" top="true">
             <el-card class="box-card">
                 <div class="mobileBox" v-html="content"></div>
             </el-card>
@@ -75,10 +75,15 @@ import {
 export default {
     data() {
             return {
+                targetMode:3,//3:人员;2:部门;1:机构
                 dialogVisible: false,
                 defaultProps: {
                     children: 'children',
                     label: 'text',
+                },
+                rydefaultProps: {
+                    children: 'children',
+                    label: 'xm',
                 },
                 dialogVisible: false,
                 type: '',
@@ -169,11 +174,19 @@ export default {
                     user: 'zxs',
                     region: ''
                 },
-
+                filterText: ''
             }
         },
-
+        watch: {
+            filterText(val) {
+                this.$refs.ryTree.filter(val);
+            }
+        },
         methods: {
+            filterNode(value, data) {
+                if (!value) return true;
+                return JSON.stringify(data).indexOf(value) !== -1;
+            },
             oneEditorChange(e) {
 
             },
@@ -209,7 +222,7 @@ export default {
                 console.log(nodeData);
                 this.targetNode = nodeData;
                 // 加载人员
-                // loadBM(nodeData, this);
+                loadRY(nodeData, this);
                 // 加载文本
                 loadInfo(this.type, nodeData, this);
             },
@@ -217,11 +230,18 @@ export default {
                 this.type = 1;
                 console.log(nodeData);
                 this.targetNode = nodeData;
+                // 加载人员
+                loadRY(nodeData, this);
                 // 加载部门
                 loadBM(nodeData, this);
                 // 加载文本
                 loadInfo(1, nodeData, this);
 
+            },
+            ryhandleNodeClick(nodeData) {
+                this.type = 3;
+                this.targetNode = nodeData;
+                loadInfo(3, nodeData, this);
             },
             handleNodeClick(nodeData) {
                 this.type = 1;
@@ -251,6 +271,7 @@ export default {
                 console.log('submit!');
             },
             save() {
+                debugger
                 var time = new Date(this.startTime).Format("yyyy-MM-dd hh:mm:ss");
                 var param = {
                     xgid: this.targetNode.id + '',
@@ -285,6 +306,11 @@ export default {
             quillEditor
         },
         mounted() {
+            console.log(window.config);
+            if(window.config){
+                console.log(window.config);
+                this.targetMode = window.config;
+            }
             let params = {
                 gljgid: '',
             }
@@ -357,6 +383,28 @@ function loadBM(nodeData, _this) {
     );
 }
 
+function loadRY(nodeData, _this) {
+    if (_this.type == 1) {
+        var params = {
+            ssjgid: nodeData.id + '',
+            bmid: ''
+        }
+    }
+    if (_this.type == 2) {
+        var params = {
+            ssjgid: nodeData.jgid + '',
+            bmid: nodeData.id + ''
+        }
+    }
+
+    _this.api.getRyList(params).then(
+        res => {
+            console.log(res);
+            _this.ryData = res.data;
+        }
+    );
+}
+
 function loadBMNode(nodeData, _this) {
     var params = {
         sjid: nodeData.id,
@@ -381,6 +429,9 @@ function loadBMNode(nodeData, _this) {
 }
 
 function loadInfo(type, nodeData, _this) {
+    if(type!=_this.targetMode){
+        return;
+    }
     var params = {
         xgid: nodeData.id,
         lx: type + '',
@@ -404,7 +455,7 @@ function loadInfo(type, nodeData, _this) {
         }
     );
 }
-Date.prototype.Format = function(fmt) { //author: meizz 
+Date.prototype.Format = function(fmt) { 
     var o = {
         "M+": this.getMonth() + 1, //月份 
         "d+": this.getDate(), //日 
@@ -421,10 +472,11 @@ Date.prototype.Format = function(fmt) { //author: meizz
 }
 </script>
 <style socped>
-.mobileBox{
-    width:640px;
-    height:1136px;
+.mobileBox {
+    width: 640px;
+    height: 1136px;
 }
+
 .hide {
     display: none;
 }

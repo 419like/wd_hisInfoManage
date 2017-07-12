@@ -2,32 +2,81 @@ var replace = require("replace");
 var pretty = require('pretty');
 var remove = require('remove');
 var fs = require('fs-extra');
-
-
-
-var fileUrl = './dist/index.html'
-
-
-
-var replaceConfig = {
-    fileUrl: fileUrl,
-    replaceArr: [{
-        regex: `<!-- plus js -->`,
-        replacement: `<script type="text/javascript" src="cordova.js"></script>`,
-    }, {
-        regex: `<!-- plus meta -->`,
-        replacement: `<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: * 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src * data: content:;">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="msapplication-tap-highlight" content="no">`,
-    }]
+var readline = require('readline');
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+const modeConfig = {
+    zk: {
+        num: 1,
+        fileSrc: 'zkjs',
+        title: '专科介绍'
+    },
+    jg: {
+        num: 2,
+        fileSrc: 'jgjs',
+        title: '机构介绍'
+    },
+    zj: {
+        num: 3,
+        fileSrc: 'zjjs',
+        title: '专家介绍'
+    },
 }
-replaceStrIndex(replaceConfig);
-formatIndex(fileUrl);
-var replaceFileConfig = {
-    dellSrc: '/Users/zxs/Documents/workSpace/workFromSvn/jshtml/his/app/webs/dynamicColumnManage',
-    copySrc: './dist'
+main();
+
+function main() {
+    var modeObj;
+    rl.question(
+        `请选择要发布的模块名：
+        1:专科介绍
+        2:机构介绍
+        3:专家介绍
+        `,
+        function(answer) {
+            if (answer == 1) {
+                console.log(`你选择的是：1:专科介绍`);
+                modeObj = modeConfig.zk;
+            }
+            if (answer == 2) {
+                console.log(`你选择的是：2:机构介绍`);
+                modeObj = modeConfig.jg;
+            }
+            if (answer == 3) {
+                console.log(`你选择的是：3:专科介绍`);
+                modeObj = modeConfig.zj;
+            }
+            rl.close();
+            operation(modeObj)
+        });
+    // operation();
 }
-replaceFiles(replaceFileConfig);
+
+function operation(mode) {
+    var fileUrl = './dist/index.html'
+    var replaceConfig = {
+        fileUrl: fileUrl,
+        replaceArr: [{
+            regex: `<!-- plus js -->`,
+            replacement: `<script type="text/javascript">
+                            debugger
+                            window.config = ` + mode.num + `;
+                        </script>`,
+        }, {
+            regex: `<!-- plus title -->`,
+            replacement: mode.title,
+        }]
+    }
+    var replaceFileConfig = {
+        dellSrc: '/Users/zxs/Documents/workSpace/workFromSvn/jshtml/his/app/webs/' + mode.fileSrc,
+        copySrc: './dist'
+    }
+    replaceStrIndex(replaceConfig);
+    formatIndex(fileUrl);
+    replaceFiles(replaceFileConfig);
+}
+
 
 
 

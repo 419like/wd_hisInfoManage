@@ -76,6 +76,12 @@ export default {
             return fetch('/rest/queryDataBySql/000204/1', params)
         },
         /**
+         * 获取人员列表
+         */
+        getRyList(params, config) {
+            return fetch('/rest/queryDataBySql/000102/1', params)
+        },
+        /**
          * 获取部门子列表
          */
         getBMNodeList(params, config) {

@@ -11,7 +11,6 @@ Vue.prototype.axios = axios;
 
 import api from './fetch/api.js';
 Vue.prototype.api = api;
-import MyConfig from './config/Config.vue'
 
 new Vue({
   el: '#app',
