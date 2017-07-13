@@ -56,7 +56,7 @@
                 </div>
             </el-col>
         </el-row>
-        <el-dialog title="提示" :visible.sync="dialogVisible" size="small" top="true">
+        <el-dialog title="预览" :visible.sync="dialogVisible" size="small" top="true">
             <el-card class="box-card">
                 <div class="mobileBox" v-html="content"></div>
             </el-card>

@@ -3,7 +3,10 @@ import axios from 'axios'
 // axios 配置
 // axios.defaults.timeout = 5000;
 axios.defaults.baseURL = 'http://125.69.67.12:7080/hisapi';
-
+if(wdphisJsObject&&JSON.parse(wdphisJsObject.wdphis.getmainurl()).data){
+    axios.defaults.baseURL = JSON.parse(wdphisJsObject.wdphis.getmainurl()).data;
+    console.log(axios.defaults.baseURL);
+}
 //POST传参序列化
 // axios.interceptors.request.use((config) => {
 //     store.commit('maskShow',true)
