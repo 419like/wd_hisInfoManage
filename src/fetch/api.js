@@ -3,7 +3,7 @@ import axios from 'axios'
 // axios 配置
 // axios.defaults.timeout = 5000;
 axios.defaults.baseURL = 'http://125.69.67.12:7080/hisapi';
-if(wdphisJsObject&&JSON.parse(wdphisJsObject.wdphis.getmainurl()).data){
+if(window.wdphisJsObject&&JSON.parse(window.wdphisJsObject.wdphis.getmainurl()).data){
     axios.defaults.baseURL = JSON.parse(wdphisJsObject.wdphis.getmainurl()).data;
     console.log(axios.defaults.baseURL);
 }
@@ -25,7 +25,7 @@ if(wdphisJsObject&&JSON.parse(wdphisJsObject.wdphis.getmainurl()).data){
 
 export function fetch(url, params, config) {
     if (window.wdphisJsObject) {
-        let res = wdphisJsObject.wdphis.httppost(url, JSON.stringify(params));
+        let res = window.wdphisJsObject.wdphis.httppost(url, JSON.stringify(params));
         res = JSON.parse(res);
         return new Promise((resolve, reject) => {
             resolve(res);
@@ -91,7 +91,7 @@ export default {
             return fetch('/rest/queryDataBySql/000204/2', params)
         },
         /**
-         * 获取部门列表
+         * 获取文章内容
          */
         getActicle(params, config) {
             return fetch('/rest/queryDataBySql/080104/1', params)

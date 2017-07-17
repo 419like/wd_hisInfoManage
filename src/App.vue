@@ -49,17 +49,17 @@
                         </div>
                     </div>
                     <div>
-                        <quill-editor v-model="content" :options="editorOption" @change="oneEditorChange($event)">
+                        <quill-editor id="myTextEditor" ref="myTextEditor" v-model="content" :options="editorOption" @change="oneEditorChange($event)">
                         </quill-editor>
                         <input class="hide" type="file" id="getFile" @change="uploadFunction($event)" />
                     </div>
                 </div>
             </el-col>
         </el-row>
-        <el-dialog title="预览" :visible.sync="dialogVisible" size="small" top="true">
-            <el-card class="box-card">
-                <div class="mobileBox" v-html="content"></div>
-            </el-card>
+        <el-dialog title="预览" :visible.sync="dialogVisible" size="tiny" top=true>
+            <div class="mobileBox">
+                <div class="html ql-editor" v-html="content"></div>
+            </div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialogVisible = false">取 消</el-button>
                 <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
@@ -188,24 +188,25 @@ export default {
                 return JSON.stringify(data).indexOf(value) !== -1;
             },
             oneEditorChange(e) {
-
+                
             },
             uploadFunction(e) {
-
+                debugger
+                console.log(this.$refs.myTextEditor.quill.getSelection());
                 //you can get images data in e.target.files
                 //an single example for using formData to post to server
-                var form = new FormData()
-                form.append('file', e.target.files[0])
-                this.axios.post(this.axios.defaults.baseURL + "/rest/uploadOriginalFile/03", form, {
-                    headers: {
-                        'Content-Type': form.type
-                    }
-                }).then((response) => {
-                    debugger
-                    this.$set(this.$data, 'content', `<p><img src="` + this.axios.defaults.baseURL + `/rest/downLoadFile?fileName=` + response.data.msg.file + `" width="100%"></p>`);
-                }).catch(() => {
-                    debugger
-                })
+                // var form = new FormData()
+                // form.append('file', e.target.files[0])
+                // this.axios.post(this.axios.defaults.baseURL + "/rest/uploadOriginalFile/03", form, {
+                //     headers: {
+                //         'Content-Type': form.type
+                //     }
+                // }).then((response) => {
+
+                //     // this.$set(this.$data, 'content', `<p><img src="` + this.axios.defaults.baseURL + `/rest/downLoadFile?fileName=` + response.data.msg.file + `" width="100%"></p>`);
+                // }).catch(() => {
+                //     debugger
+                // })
             },
             startHacking() {
                 this.$notify({
@@ -330,6 +331,13 @@ export default {
                     this.$set(this.$data, 'jgData', data);
                 }
             );
+            let quill = this.$refs.myTextEditor.quill;
+            quill.keyboard.addBinding({ key: ' ' }, (range, context)=>{
+                quill.clipboard.dangerouslyPasteHTML(range.index, '<b>&nbsp;</b>');
+                quill.setSelection(range.index+1, 0);
+
+            });
+
         },
         computed: {
             loading: function() {
@@ -473,8 +481,10 @@ Date.prototype.Format = function(fmt) {
 </script>
 <style socped>
 .mobileBox {
-    width: 640px;
-    height: 1136px;
+    width: 360px;
+    height: 640px;
+    border:1px solid #CCCCCC;
+    /*transform:scale(.8,.8);*/
 }
 
 .hide {
