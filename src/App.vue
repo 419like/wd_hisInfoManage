@@ -192,21 +192,24 @@ export default {
             },
             uploadFunction(e) {
                 debugger
-                console.log(this.$refs.myTextEditor.quill.getSelection());
+                let quill = this.$refs.myTextEditor.quill;
+                let index = quill.getSelection().index;
                 //you can get images data in e.target.files
                 //an single example for using formData to post to server
-                // var form = new FormData()
-                // form.append('file', e.target.files[0])
-                // this.axios.post(this.axios.defaults.baseURL + "/rest/uploadOriginalFile/03", form, {
-                //     headers: {
-                //         'Content-Type': form.type
-                //     }
-                // }).then((response) => {
-
-                //     // this.$set(this.$data, 'content', `<p><img src="` + this.axios.defaults.baseURL + `/rest/downLoadFile?fileName=` + response.data.msg.file + `" width="100%"></p>`);
-                // }).catch(() => {
-                //     debugger
-                // })
+                var form = new FormData()
+                form.append('file', e.target.files[0])
+                let rootUrl = this.axios.defaults.baseURL;
+                this.axios.post(this.axios.defaults.baseURL + "/rest/uploadOriginalFile/04", form, {
+                    headers: {
+                        'Content-Type': form.type
+                    }
+                }).then((response) => {
+                    // quill.insertEmbed(index, 'image', rootUrl+ `/rest/downLoadFile?fileName=` + response.data.msg.file);
+                    let src = rootUrl+ `/rest/downLoadFile?fileName=` + response.data.msg.file;
+                    quill.clipboard.dangerouslyPasteHTML(index, `<p><img src="`+src+`" width="100%"></img></p>`);
+                    quill.setSelection(index+1, 0);
+                }).catch(() => {
+                })
             },
             startHacking() {
                 this.$notify({
@@ -278,7 +281,7 @@ export default {
                     xgid: this.targetNode.id + '',
                     lx: this.type + '',
                     qyrq: time,
-                    nr: this.content + '',
+                    nr: encodeURIComponent(encodeURI(this.content)),
                     zt: "1"
                 }
                 if (this.id) {
@@ -457,7 +460,7 @@ function loadInfo(type, nodeData, _this) {
                     startTime: ''
                 }
             }
-            _this.$set(_this.$data, 'content', data.nr);
+            _this.$set(_this.$data, 'content', decodeURIComponent(data.nr));
             _this.$set(_this.$data, 'startTime', data.qyrq);
             _this.$set(_this.$data, 'id', data.id);
         }
@@ -478,6 +481,7 @@ Date.prototype.Format = function(fmt) {
         if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
     return fmt;
 }
+
 </script>
 <style socped>
 .mobileBox {
